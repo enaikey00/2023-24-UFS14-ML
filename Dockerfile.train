@@ -7,7 +7,7 @@ ENV PATH="/opt/ml/code:${PATH}"
 ENV SAGEMAKER_SUBMIT_DIRECTORY /opt/ml/code
 
 # /opt/ml and all subdirectories are utilized by SageMaker, use the /code subdirectory to store your user code.
-ADD ./src /opt/ml/code/
+ADD ./src/train /opt/ml/code/
 
 # Defines my-custom-training-script.py as script entrypoint 
 ENV SAGEMAKER_PROGRAM my-custom-training-script.py

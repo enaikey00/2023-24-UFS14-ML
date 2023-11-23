@@ -1,9 +1,9 @@
 services:
   sagemaker-training:
-    image: my-custom-sagemaker-image
+    image: my-custom-sagemaker-training-image
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.train
     container_name: sagemaker-training
     command: ["tail", "-f", "/dev/null"]
     environment:
@@ -13,7 +13,7 @@ services:
       - SM_MODEL_DIR=/opt/ml/model
       - SM_OUTPUT_DATA_DIR=/opt/ml/output/data
     volumes:
-      - ./src:/opt/ml/code
+      - ./src/train:/opt/ml/code
       - ./data/input:/opt/ml/input/data/training
       - ./data/output-compose/model:/opt/ml/model
       - ./data/output-compose/data:/opt/ml/output/data
