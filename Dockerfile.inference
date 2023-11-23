@@ -1,0 +1,10 @@
+# SageMaker PyTorch image
+FROM 763104351884.dkr.ecr.us-east-1.amazonaws.com/pytorch-inference:1.5.0-cpu-py3
+
+# /opt/ml and all subdirectories are utilized by SageMaker, use the /code subdirectory to store your user code.
+ADD ./src/inference /opt/ml/code/
+
+RUN pip install -r /opt/ml/code/requirements.txt
+
+# Defines my-custom-inference-script.py as Docker entrypoint 
+ENTRYPOINT ["python", "/opt/ml/code/my-custom-inference-script.py"]
