@@ -3,6 +3,7 @@ import json
 import glob
 import sys
 from os import environ
+from flask import Flask
 
 if environ.get('AA_LOG_FILE') is not None:
     # only during development we pass this env to log to a file
@@ -11,8 +12,20 @@ else:
     # on AWS we should log to the console STDOUT to be able to see logs on AWS CloudWatch
     logging.basicConfig(level=logging.DEBUG)
 
-if __name__ == '__main__':
-    logging.debug('Hello my custom SageMaker init script!')
+logging.debug('Init a Flask app')
+app = Flask(__name__)
+
+
+@app.route('/ping')
+def ping():
+    logging.debug('Hello from route /ping')
+
+    return 'Hello, World!'
+
+# see https://docs.aws.amazon.com/sagemaker/latest/dg/your-algorithms-inference-code.html#your-algorithms-inference-code-container-response
+@app.route('/invocations', methods=['POST'])
+def invocations():
+    logging.debug('Hello from route /invocations')
 
     model_files = glob.glob("{}/*.*".format('/opt/ml/model'))
     model_files_str = json.dumps(model_files, sort_keys=True, indent=4)
@@ -27,3 +40,7 @@ if __name__ == '__main__':
     sys_argv = json.dumps(sys.argv[1:], sort_keys=True, indent=4)
     logging.debug('sys_argv')
     logging.debug(sys_argv)
+
+    return {
+        'inference_result': 0.5
+    }

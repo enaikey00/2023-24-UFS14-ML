@@ -6,5 +6,9 @@ ADD ./src/inference /opt/ml/code/
 
 RUN pip install -r /opt/ml/code/requirements.txt
 
-# Defines my-custom-inference-script.py as Docker entrypoint 
-ENTRYPOINT ["python", "/opt/ml/code/my-custom-inference-script.py"]
+# Defines my-custom-inference-script.py as Flask app
+# https://flask.palletsprojects.com/en/1.1.x/quickstart/#a-minimal-application
+ENV FLASK_APP=/opt/ml/code/my-custom-inference-script.py
+
+# Defines a custom Docker entrypoint to spawn flask
+ENTRYPOINT ["/opt/ml/code/entrypoint.sh"]

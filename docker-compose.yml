@@ -33,3 +33,5 @@ services:
       - ./data/output/model:/opt/ml/model
       - ./data/output-compose/data:/opt/ml/output/data
     working_dir: /opt/ml/code
+    ports:
+        - 8080:8080
