@@ -86,9 +86,6 @@ def build_autoencoder_with_residual():
 
 logging.basicConfig(filename='/opt/ml/output/data/logs-training.txt', level=logging.DEBUG)
 
-# load preprocessed data
-images = np.load("{}/data/training/images.npy".format(os.environ['SM_INPUT_DIR']))
-brain_scans = np.load("{}/data/training/brains.npy".format(os.environ['SM_INPUT_DIR']))
 
 if __name__ == '__main__':
     logging.debug('Hello my custom SageMaker init script!')
@@ -116,6 +113,11 @@ if __name__ == '__main__':
     f_output_data.write(json.dumps(glob.glob("{}/*/*/*.*".format(os.environ['SM_INPUT_DIR']))))
     f_output_data.close()
     logging.debug('SM_INPUT_DIR files list dumped to sm-input-dir.json')
+    
+    
+    # load preprocessed data
+    images = np.load("{}/data/train/images.npy".format(os.environ['SM_INPUT_DIR']))
+    brain_scans = np.load("{}/data/train/brains.npy".format(os.environ['SM_INPUT_DIR']))
     
     autoencoder_with_residual = build_autoencoder_with_residual()
     autoencoder_with_residual.compile(optimizer='sgd', loss='mean_squared_error', metrics=RootMeanSquaredError())
