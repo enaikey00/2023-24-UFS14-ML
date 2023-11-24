@@ -43,10 +43,8 @@ def invocations():
     
     
     model_path = "/opt/ml/model/autoencoder.keras"
-    # Save the model
+    # Load the model
     autoencoder_with_residual.load_weights(model_path)
-
-
 
     brain_train = brain_scans[1000, :, :, :]
     image_train = images[1000, :, :, :]
@@ -54,29 +52,23 @@ def invocations():
     reconstructed_train = autoencoder_with_residual.predict(single_brain_scan)
 
     image_train= image_train[:, :, :]
-
     image_train = ( image_train * 255).astype(np.uint8)
 
     reconstructed_image = reconstructed_train[0, :, :, :]
-
     reconstructed_image = (reconstructed_image * 255).astype(np.uint8)
 
     print(image_train.shape)
-
     print(reconstructed_image.shape)
 
-
     Image.fromarray(image_train, mode="RGB").save("img.png")
-
     Image.fromarray(reconstructed_image, mode="RGB").save("img2.png")
-    
     
     bucket_name = "a-random-bucket-name-nik-422723"
     
     import boto3
     s3_resource = boto3.Session().resource('s3')
-    s3_resource.Bucket("a-random-bucket-name-nik-422723").Object("demo/image_train.png").put(Body="img.png")
-    s3_resource.Bucket("a-random-bucket-name-nik-422723").Object("demo/image_predicted.png").put(Body="img2.png")
+    s3_resource.Bucket(bucket_name).Object("demo/image_train.png").put(Body="img.png")
+    s3_resource.Bucket(bucket_name).Object("demo/image_predicted.png").put(Body="img2.png")
 
 
 
