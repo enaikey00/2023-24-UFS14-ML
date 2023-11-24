@@ -42,6 +42,82 @@ def invocations():
     logging.debug(sys_argv)
     
     
+    def build_autoencoder_with_residual():
+        input_img = Input(shape=(64, 64, 50))
+
+        # encoder
+        x = Conv2D(64, (3, 3), activation='relu', padding='same')(input_img)
+        x = BatchNormalization()(x)
+        x = Conv2D(64, (3, 3), activation='relu', padding='same')(x)
+        x = BatchNormalization()(x)
+
+        x = MaxPooling2D((2, 2), padding='same')(x)
+        residual_1 = x  # residual connection
+
+        x = Conv2D(128, (3, 3), activation='relu', padding='same')(x)
+        x = BatchNormalization()(x)
+        x = Conv2D(128, (3, 3), activation='relu', padding='same')(x)
+        x = BatchNormalization()(x)
+
+        x = MaxPooling2D((2, 2), padding='same')(x)
+        residual_2 = x  # residual connection
+
+        x = Conv2D(256, (3, 3), activation='relu', padding='same')(x)
+        x = BatchNormalization()(x)
+        x = Conv2D(256, (3, 3), activation='relu', padding='same')(x)
+        x = BatchNormalization()(x)
+        x = MaxPooling2D((2, 2), padding='same')(x)
+
+        x = Conv2D(512, (3, 3), activation='relu', padding='same')(x)
+        x = BatchNormalization()(x)
+        x = Conv2D(512, (3, 3), activation='relu', padding='same')(x)
+        x = BatchNormalization()(x)
+        x = MaxPooling2D((2, 2), padding='same')(x)
+
+        x = Conv2D(1024, (3, 3), activation='relu', padding='same')(x)
+        x = BatchNormalization()(x)
+        x = Conv2D(1024, (3, 3), activation='relu', padding='same')(x)
+        x = BatchNormalization()(x)
+        encoded = MaxPooling2D((2, 2), padding='same')(x)
+
+        # decoder
+        x = Conv2D(1024, (3, 3), activation='relu', padding='same')(encoded)
+        x = BatchNormalization()(x)
+        x = Conv2D(1024, (3, 3), activation='relu', padding='same')(x)
+        x = BatchNormalization()(x)
+        x = UpSampling2D((2, 2))(x)
+        x = Conv2D(512, (3, 3), activation='relu', padding='same')(x)
+        x = BatchNormalization()(x)
+        x = Conv2D(512, (3, 3), activation='relu', padding='same')(x)
+        x = BatchNormalization()(x)
+        x = UpSampling2D((2, 2))(x)
+        x = Conv2D(256, (3, 3), activation='relu', padding='same')(x)
+        x = BatchNormalization()(x)
+        x = Conv2D(256, (3, 3), activation='relu', padding='same')(x)
+        x = BatchNormalization()(x)
+        x = UpSampling2D((2, 2))(x)
+        x = Conv2D(128, (3, 3), activation='relu', padding='same')(x)
+        x = BatchNormalization()(x)
+        x = Conv2D(128, (3, 3), activation='relu', padding='same')(x)
+        x = BatchNormalization()(x)
+        # x = tf.keras.layers.Add()([x, residual_2])
+        x += residual_2
+        x = UpSampling2D((2, 2))(x)
+        x = Conv2D(64, (3, 3), activation='relu', padding='same')(x)
+        x = BatchNormalization()(x)
+        x = Conv2D(64, (3, 3), activation='relu', padding='same')(x)
+        x = BatchNormalization()(x)
+        # x = tf.keras.layers.Add()([x, residual_1])
+        x += residual_1
+        x = UpSampling2D((2, 2))(x)
+        decoded = Conv2D(3, (3, 3), activation='sigmoid', padding='same')(x)
+
+        autoencoder = Model(input_img, decoded)
+        return autoencoder
+
+
+    autoencoder_with_residual = build_autoencoder_with_residual()
+    
     model_path = "/opt/ml/model/autoencoder.keras"
     # Load the model
     autoencoder_with_residual.load_weights(model_path)
