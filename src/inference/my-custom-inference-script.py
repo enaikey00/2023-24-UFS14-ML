@@ -4,6 +4,20 @@ import glob
 import sys
 from os import environ
 from flask import Flask
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, UpSampling2D, Dense, Flatten, Input, BatchNormalization
+from tensorflow.keras.models import Model, Sequential
+from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping, TensorBoard, ReduceLROnPlateau, LearningRateScheduler
+from tensorflow.keras.metrics import RootMeanSquaredError, MeanAbsoluteError, MeanSquaredLogarithmicError, CosineSimilarity, LogCoshError
+from tensorflow.keras.losses import MeanSquaredError, MeanAbsoluteError
+import matplotlib.pyplot as plt
+import numpy as np
+import os
+import gzip
+import shutil
+from tqdm import tqdm
+import pandas as pd
+import tensorflow as tf
+import time
 
 
 if environ.get('AA_LOG_FILE') is not None:
@@ -24,6 +38,7 @@ def ping():
     return 'Hello, World!'
 
 print("CIAO")
+# ciao
 # see https://docs.aws.amazon.com/sagemaker/latest/dg/your-algorithms-inference-code.html#your-algorithms-inference-code-container-response
 
 @app.route('/invocations', methods=['POST'])
@@ -31,22 +46,15 @@ def invocations():
     print("CIAO2")
     logging.debug('Hello from route /invocations')
 
-    model_files = glob.glob("{}/*.*".format('/opt/ml/model'))
-    model_files_str = json.dumps(model_files, sort_keys=True, indent=4)
-    logging.debug('model_files_str')
-    logging.debug(model_files_str)
 
-    for model_file in model_files:
-        logging.debug('reading file {}'.format(model_file))
-        model_file_content = json.load(open(model_file))
-        logging.debug(json.dumps(model_file_content, sort_keys=True, indent=4))
 
     sys_argv = json.dumps(sys.argv[1:], sort_keys=True, indent=4)
     logging.debug('sys_argv')
     logging.debug(sys_argv)
-    
+    print("CIO")
     def build_autoencoder_with_residual():
         input_img = Input(shape=(64, 64, 50))
+        #input_img = Input(shape=(4272, 64, 64))
 
         # encoder
         x = Conv2D(64, (3, 3), activation='relu', padding='same')(input_img)
@@ -125,18 +133,20 @@ def invocations():
     # Load the model
     autoencoder_with_residual.load_weights(model_path)
     
-    image = np.load("/opt/ml/model/image.npy")
+    image = np.load("/opt/ml/code/image.npy")
     print(image)
-    brain_scan = np.load("/opt/ml/model/pippo.npy")
+    brain_scan = np.load("/opt/ml/code/pippo.npy")
     
-
-    #brain_train = brain_scans[1000, :, :, :]
+    
+    np.reshape(brain_scan, (64,64,50))
+    #brain_train = brain_scan[1000, :, :, :]
+    print(brain_scan.shape)
     #image_train = images[1000, :, :, :]
     single_brain_scan = np.expand_dims(brain_scan, axis=0)
     reconstructed_train = autoencoder_with_residual.predict(single_brain_scan)
 
     image_train= image[:, :, :]
-    image_train = ( image_train * 255).astype(np.uint8)
+    image_train = ( image_train* 255).astype(np.uint8)
 
     reconstructed_image = reconstructed_train[0, :, :, :]
     reconstructed_image = (reconstructed_image * 255).astype(np.uint8)
@@ -159,3 +169,4 @@ def invocations():
     return {
         'inference_result': 0.5
     }
+    
