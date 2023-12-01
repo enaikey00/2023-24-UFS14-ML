@@ -5,6 +5,7 @@ import sys
 from os import environ
 from flask import Flask
 
+
 if environ.get('AA_LOG_FILE') is not None:
     # only during development we pass this env to log to a file
     logging.basicConfig(filename=environ.get('AA_LOG_FILE'), level=logging.DEBUG)
@@ -22,9 +23,12 @@ def ping():
 
     return 'Hello, World!'
 
+print("CIAO")
 # see https://docs.aws.amazon.com/sagemaker/latest/dg/your-algorithms-inference-code.html#your-algorithms-inference-code-container-response
+
 @app.route('/invocations', methods=['POST'])
 def invocations():
+    print("CIAO2")
     logging.debug('Hello from route /invocations')
 
     model_files = glob.glob("{}/*.*".format('/opt/ml/model'))
@@ -40,7 +44,6 @@ def invocations():
     sys_argv = json.dumps(sys.argv[1:], sort_keys=True, indent=4)
     logging.debug('sys_argv')
     logging.debug(sys_argv)
-    
     
     def build_autoencoder_with_residual():
         input_img = Input(shape=(64, 64, 50))
@@ -121,13 +124,18 @@ def invocations():
     model_path = "/opt/ml/model/autoencoder.keras"
     # Load the model
     autoencoder_with_residual.load_weights(model_path)
+    
+    image = np.load("/opt/ml/model/image.npy")
+    print(image)
+    brain_scan = np.load("/opt/ml/model/pippo.npy")
+    
 
-    brain_train = brain_scans[1000, :, :, :]
-    image_train = images[1000, :, :, :]
-    single_brain_scan = np.expand_dims(brain_train, axis=0)
+    #brain_train = brain_scans[1000, :, :, :]
+    #image_train = images[1000, :, :, :]
+    single_brain_scan = np.expand_dims(brain_scan, axis=0)
     reconstructed_train = autoencoder_with_residual.predict(single_brain_scan)
 
-    image_train= image_train[:, :, :]
+    image_train= image[:, :, :]
     image_train = ( image_train * 255).astype(np.uint8)
 
     reconstructed_image = reconstructed_train[0, :, :, :]
@@ -139,7 +147,7 @@ def invocations():
     Image.fromarray(image_train, mode="RGB").save("img.png")
     Image.fromarray(reconstructed_image, mode="RGB").save("img2.png")
     
-    bucket_name = "a-random-bucket-name-nik-422723"
+    bucket_name = "a-random-bucket-name-nik-301255"
     
     import boto3
     s3_resource = boto3.Session().resource('s3')
